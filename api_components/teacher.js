@@ -74,6 +74,7 @@ router.route('/teachers/:school_id')
         });
 
     })
+    
     .get(function(req, res, next) {
         var resultArray = [];
         mongo.connect(url, function(err, db) {
