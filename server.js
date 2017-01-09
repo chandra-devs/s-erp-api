@@ -9,6 +9,7 @@ var attendance = require("./api_components/attendance.js");
 var employee = require("./api_components/employee.js");
 var staff_user = require("./api_components/staff_user.js");
 var teachers = require("./api_components/teacher.js");
+var assesment = require("./api_components/assesment.js");
 
 var config = require("./config.json");
 var express = require("express");
@@ -71,4 +72,5 @@ app.use('/api', course_works);
 app.use('/api', attendance);
 app.use('/api', employee);
 app.use('/api', staff_user);
+app.use('/api', assesment);
 app.use('/api', router);

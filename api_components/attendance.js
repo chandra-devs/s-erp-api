@@ -18,7 +18,7 @@ router.use(function(req, res, next) {
     next(); // make sure we go to the next routes and don't stop here
 });
 
-// Add Schools
+// Add Attandance
 
 router.route('/attendance/:student_id')
     .post(function(req, res, next) {
@@ -32,6 +32,9 @@ router.route('/attendance/:student_id')
             var session = 'morning';
         }
         attendance = [];
+        if (req.body.session) {
+          var session = req.body.session;
+        }
         var item = {
             attendance_id: 'getauto',
             student_id: student_id,
