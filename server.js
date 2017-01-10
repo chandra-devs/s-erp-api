@@ -1,5 +1,6 @@
 // flow
 var schools = require("./api_components/schools.js");
+var exam_schedule = require("./api_components/exam_schedule.js");
 var exams = require("./api_components/exams.js");
 var school_classes = require("./api_components/school_classes.js");
 var students = require("./api_components/students.js");
@@ -64,6 +65,7 @@ app.listen(port, function(){
 
 app.use('/api', schools);
 app.use('/api', exams);
+app.use('/api', exam_schedule);
 app.use('/api', school_classes);
 app.use('/api', teachers);
 app.use('/api', students);

@@ -67,9 +67,10 @@ router.route('/subjects/:class_id')
     })
     .get(function(req, res, next) {
         var resultArray = [];
+        var class_id = req.params.class_id;
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('subjects').find();
+            var cursor = db.collection('subjects').find({class_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
@@ -91,7 +92,7 @@ router.route('/subjects/:class_id')
         var cursor = db.collection('subjects').aggregate([
           {$match:{class_id}},
           {$group: {
-            _id: '$class_id', classes: {$push: '$subject_id'}
+            _id: '$class_id', subject_ids: {$push: '$subject_id'}
             }
           }
         ]);
@@ -113,7 +114,7 @@ router.route('/subjects/:class_id')
         var cursor = db.collection('subjects').aggregate([
           {$match:{subject_id}},
           {$group: {
-            _id: '$subject_id', classes: {$push: '$name'}
+            _id: '$subject_id', subject_names: {$push: '$name'}
             }
           }
         ]);

@@ -73,7 +73,7 @@ router.route('/students/:class_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    student_id: 'SCH-STD-'+autoIndex
+                                    student_id: class_id+'-STD-'+autoIndex
                                 },
                                 $push: {
                                   current_address, permanent_address

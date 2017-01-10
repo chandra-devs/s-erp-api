@@ -20,16 +20,17 @@ router.use(function(req, res, next) {
 
 // Add Exams
 
-router.route('/exams/:subject_id')
+router.route('/exams/:subject_id/:exam_sch_id')
     .post(function(req, res, next) {
         var status = 1;
         var subject_id = req.params.subject_id;
+        var exam_sch_id = req.params.exam_sch_id;
         subjects = [];
         var item = {
-            exam_id: 'getauto',
+            exam_paper_id: 'getauto',
             subject_id: subject_id,
-            exam_title: req.body.exam_title,
-            exam_type: req.body.exam_type,
+            exam_sch_id: exam_sch_id,
+            exam_paper_title: req.body.exam_paper_title,
             date: req.body.date,
             time_from: req.body.time_from,
             time_to: req.body.time_to,
@@ -39,11 +40,11 @@ router.route('/exams/:subject_id')
             autoIncrement.getNextSequence(db, 'exams', function(err, autoIndex) {
                 var collection = db.collection('exams');
                 collection.ensureIndex({
-                    "exam_id": 1,
+                    "exam_paper_id": 1,
                 }, {
                     unique: true
                 }, function(err, result) {
-                    if (item.subject_id == null || item.exam_title == null || item.date == null) {
+                    if (item.subject_id == null || item.exam_sch_id == null || item.exam_paper_title == null || item.date == null) {
                         res.end('null');
                     } else {
                         collection.insertOne(item, function(err, result) {
@@ -57,7 +58,7 @@ router.route('/exams/:subject_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    exam_id: 'SCH-EXM-'+autoIndex
+                                    exam_paper_id: exam_sch_id+'-'+subject_id+'-EXM-'+autoIndex
                                 }
                             }, function(err, result) {
                                 db.close();
@@ -71,35 +72,161 @@ router.route('/exams/:subject_id')
 
     })
     .get(function(req, res, next) {
+      var subject_id = req.params.subject_id;
+      var exam_sch_id = req.params.exam_sch_id;
         var resultArray = [];
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('exams').find();
+            var cursor = db.collection('exams').find({subject_id, exam_sch_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
             }, function() {
                 db.close();
                 res.send({
-                    exams: resultArray
+                    [exam_sch_id+'-'+subject_id]: resultArray
                 });
             });
         });
     });
 
-    router.route('/exam_edit/:exam_id')
+    router.route('/get_exam/:exam_paper_id')
+    .get(function(req, res, next) {
+      var exam_paper_id = req.params.exam_paper_id;
+        var resultArray = [];
+        mongo.connect(url, function(err, db) {
+            assert.equal(null, err);
+            var cursor = db.collection('exams').find({exam_paper_id});
+            cursor.forEach(function(doc, err) {
+                assert.equal(null, err);
+                resultArray.push(doc);
+            }, function() {
+                db.close();
+                res.send({
+                    exam: resultArray
+                });
+            });
+        });
+    });
+
+    router.route('/exam_edit/:exam_paper_id')
         .post(function(req, res, next){
-          var exam_id = req.params.exam_id;
+          var exam_paper_id = req.params.exam_paper_id;
           var name = req.body.name;
           var value = req.body.value;
+          if (name == 'status') {
+            var value = parseInt(req.body.value);
+          }
+
           mongo.connect(url, function(err, db){
-                db.collection('schools').update({exam_id},{$set:{[name]: value}}, function(err, result){
+                db.collection('exams').update({exam_paper_id},{$set:{[name]: value}}, function(err, result){
                   assert.equal(null, err);
                    db.close();
                    res.send('true');
                 });
           });
         });
+
+
+    router.route('/exam_eval/:exam_paper_id/:student_id')
+        .post(function(req, res, next) {
+            var status = 1;
+            var exam_paper_id = req.params.exam_paper_id;
+            var student_id = req.params.student_id;
+            var date = new Date();
+            console.log(date);
+            subjects = [];
+            var item = {
+                paper_result_id: 'getauto',
+                exam_paper_id: exam_paper_id,
+                student_id: student_id,
+                marks: req.body.marks,
+                comment: req.body.comment,
+                date: date,
+                status: status,
+            };
+            mongo.connect(url, function(err, db) {
+                autoIncrement.getNextSequence(db, 'exam_evaluation', function(err, autoIndex) {
+                  var count = db.collection('exam_evaluation').find({ $and: [{exam_paper_id, student_id}]}).count(function (e, count){
+                    if (count > 0) {
+                      db.close();
+                      res.end('already submitted');
+                    }
+                  });
+                    var collection = db.collection('exam_evaluation');
+                    collection.ensureIndex({
+                        "paper_result_id": 1,
+                    }, {
+                        unique: true
+                    }, function(err, result) {
+                        if (item.exam_paper_id == null || item.student_id == null || item.marks == null || item.comment == null) {
+                            res.end('null');
+                        } else {
+                            collection.insertOne(item, function(err, result) {
+                                if (err) {
+                                    if (err.code == 11000) {
+                                        res.end('false');
+                                    }
+                                    res.end('false');
+                                }
+                                collection.update({
+                                    _id: item._id
+                                }, {
+                                    $set: {
+                                        paper_result_id: exam_paper_id+'-'+student_id+'-EVAL-'+autoIndex
+                                    }
+                                }, function(err, result) {
+                                    db.close();
+                                    res.end('true');
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+
+        })
+        .get(function(req, res, next) {
+          var exam_paper_id = req.params.exam_paper_id;
+          var student_id = req.params.student_id;
+            var resultArray = [];
+            mongo.connect(url, function(err, db) {
+                assert.equal(null, err);
+                var cursor = db.collection('exam_evaluation').find({exam_paper_id, student_id});
+                cursor.forEach(function(doc, err) {
+                    assert.equal(null, err);
+                    resultArray.push(doc);
+                }, function() {
+                    db.close();
+                    res.send({
+                        [exam_paper_id+'-'+subject_id]: resultArray
+                    });
+                });
+            });
+        });
+
+      // router.route('/chk_exam_eval/:exam_paper_id/:student_id')
+      // .get(function(req, res, next) {
+      //   var exam_paper_id = req.params.exam_paper_id;
+      //   var student_id = req.params.student_id;
+      //     var resultArray = [];
+      //     mongo.connect(url, function(err, db) {
+      //         assert.equal(null, err);
+      //         var count = db.collection('exam_evaluation').find({exam_paper_id, student_id}).count();
+      //         cursor.forEach(function(doc, err) {
+      //             assert.equal(null, err);
+      //             resultArray.push(doc);
+      //         }, function() {
+      //             db.close();
+      //             res.send({
+      //                 count: resultArray
+      //             });
+      //         });
+      //     });
+      // });
+
+
+
 
 
 module.exports = router;

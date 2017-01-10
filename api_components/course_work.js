@@ -71,7 +71,7 @@ router.route('/course_works/:subject_id')
         var resultArray = [];
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('courseworks').find();
+            var cursor = db.collection('courseworks').find({subject_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
@@ -138,7 +138,7 @@ router.route('/course_works/:subject_id')
             var resultArray = [];
             mongo.connect(url, function(err, db) {
                 assert.equal(null, err);
-                var cursor = db.collection('topics').find();
+                var cursor = db.collection('topics').find({lesson_id});
                 cursor.forEach(function(doc, err) {
                     assert.equal(null, err);
                     resultArray.push(doc);
@@ -205,7 +205,7 @@ router.route('/course_works/:subject_id')
                 var resultArray = [];
                 mongo.connect(url, function(err, db) {
                     assert.equal(null, err);
-                    var cursor = db.collection('topic_notes').find();
+                    var cursor = db.collection('topic_notes').find({topic_id});
                     cursor.forEach(function(doc, err) {
                         assert.equal(null, err);
                         resultArray.push(doc);

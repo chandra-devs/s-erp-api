@@ -66,7 +66,7 @@ router.route('/attendance/:student_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    attendance_id: 'SCH-CL-ATT-213' + autoIndex
+                                    attendance_id: student_id+'-ATT-' + autoIndex
                                 }
                             }, function(err, result) {
                                 db.close();
@@ -79,10 +79,11 @@ router.route('/attendance/:student_id')
         });
     })
     .get(function(req, res, next) {
+        var student_id = req.params.student_id;
         var resultArray = [];
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('attendance').find();
+            var cursor = db.collection('attendance').find({student_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
@@ -95,27 +96,6 @@ router.route('/attendance/:student_id')
         });
     });
 
-// router.route('/get_attendance/:student_id')
-// .get(function(req, res, next){
-//   var student_id = req.params.student_id;
-//   var resultArray = [];
-//   mongo.connect(url, function(err, db){
-//     assert.equal(null, err);
-//     var cursor = db.collection('attendance').aggregate([
-//       {$match:{student_id}},
-//       {$group: {
-//         _id: '$student_id', attendance: {$push: '$status'}
-//         }
-//       }
-//     ]);
-//     cursor.forEach(function(doc, err){
-//       resultArray.push(doc);
-//     }, function(){
-//       db.close();
-//       res.send(resultArray[0]);
-//     });
-//   });
-// });
 
 router.route('/get_attendance/:student_id/')
     .get(function(req, res, next) {
@@ -164,43 +144,6 @@ router.route('/get_attendance_by_date/:student_id/:date')
             });
         });
     });
-
-//
-// router.route('/get_class_name/:class_id')
-// .get(function(req, res, next){
-//   var class_id = req.params.class_id;
-//   var resultArray = [];
-//   mongo.connect(url, function(err, db){
-//     assert.equal(null, err);
-//     var cursor = db.collection('school_classes').aggregate([
-//       {$match:{class_id}},
-//       {$group: {
-//         _id: '$class_id', classes: {$push: '$name'}
-//         }
-//       }
-//     ]);
-//     cursor.forEach(function(doc, err){
-//       resultArray.push(doc);
-//     }, function(){
-//       db.close();
-//       res.send(resultArray[0]);
-//     });
-//   });
-// });
-//
-// router.route('/school_classes_edit/:class_id/:name/:value')
-//     .post(function(req, res, next){
-//       var class_id = req.params.class_id;
-//       var name = req.params.name;
-//       var value = req.params.value;
-//       mongo.connect(url, function(err, db){
-//             db.collection('school_classes').update({class_id},{$set:{[name]: value}}, function(err, result){
-//               assert.equal(null, err);
-//                db.close();
-//                res.send('true');
-//             });
-//       });
-//     });
 
 
 module.exports = router;
