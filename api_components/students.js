@@ -36,6 +36,7 @@ router.route('/students/:class_id')
             last_name: req.body.last_name,
             gender: req.body.gender,
             dob: req.body.dob,
+            aadhar_no: req.body.aadhar_no,
             phone: req.body.phone,
             email: req.body.email,
             category: req.body.category,
