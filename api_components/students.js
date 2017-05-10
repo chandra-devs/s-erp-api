@@ -23,16 +23,25 @@ router.use(function(req, res, next) {
 router.route('/students/:class_id')
     .post(function(req, res, next) {
         var class_id = req.params.class_id;
+        var splited = class_id.split("-");
+        var school_id = splited[0]+'-'+splited[1];
         var status = 1;
         var item = {
             student_id: 'getauto',
+            school_id: school_id,
             class_id: class_id,
-            student_name: req.body.student_name,
-            student_surname: req.body.student_surname,
+            section: req.body.section,
+            surname: req.body.surname,
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            gender: req.body.gender,
             dob: req.body.dob,
             phone: req.body.phone,
             email: req.body.email,
+            category: req.body.category,
+            admission_date: req.body.admission_date,
             academic_year: req.body.academic_year,
+            bus_route_id: req.body.bus_route_id,
             status: status,
         };
         var current_address = {
@@ -55,11 +64,11 @@ router.route('/students/:class_id')
             autoIncrement.getNextSequence(db, 'students', function(err, autoIndex) {
                 var collection = db.collection('students');
                 collection.ensureIndex({
-                    "student_id": 1,
-                }, {
+                    "student_id": 1
+                },{
                     unique: true
                 }, function(err, result) {
-                    if (item.student_name == null || item.dob == null || item.phone == null) {
+                    if (item.section == null || item.dob == null || item.phone == null) {
                         res.end('null');
                     } else {
                         collection.insertOne(item, function(err, result) {
@@ -73,7 +82,7 @@ router.route('/students/:class_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    student_id: class_id+'-STD-'+autoIndex
+                                  student_id: class_id+'-STD-'+autoIndex
                                 },
                                 $push: {
                                   current_address, permanent_address
@@ -85,15 +94,19 @@ router.route('/students/:class_id')
                         });
                     }
                 });
+                collection.ensureIndex({
+                    "first_name":"text","last_name":"text"
+                });
             });
         });
 
     })
     .get(function(req, res, next) {
+        var class_id = req.params.class_id;
         var resultArray = [];
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('students').find();
+            var cursor = db.collection('students').find({class_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
@@ -106,6 +119,25 @@ router.route('/students/:class_id')
         });
     });
 
+router.route('/search_student/:academic_year/:class_id/:section/:search_key')
+.get(function(req, res, next){
+  var academic_year = req.params.academic_year;
+  var class_id = req.params.class_id;
+  var section = req.params.section.toUpperCase();
+  var search_key = req.params.search_key;
+  var resultArray = [];
+  mongo.connect(url, function(err, db){
+    assert.equal(null, err);
+    var cursor = db.collection('students').find({academic_year,class_id,section, $text:{$search:search_key}});
+    cursor.forEach(function(doc, err){
+      resultArray.push(doc);
+    }, function(){
+      db.close();
+      res.send(resultArray);
+    });
+  });
+});
+
 router.route('/add_parent/:student_id')
     .post(function(req, res, next){
       parents = [];
@@ -113,7 +145,8 @@ router.route('/add_parent/:student_id')
       var parents = {
         parent_name: req.body.parent_name,
         parent_contact: req.body.parent_contact,
-        parent_relation: req.body.parent_relation
+        parent_relation: req.body.parent_relation,
+        occupation: req.body.occupation
       };
       mongo.connect(url, function(err, db){
             db.collection('students').update({student_id},{$push:{parents}}, function(err, result){
@@ -196,6 +229,7 @@ router.route('/student_permanent_address/:student_id')
       });
     });
 
+
     router.route('/students/:student_id')
         .get(function(req, res, next){
           var student_id = req.params.student_id;
@@ -219,6 +253,22 @@ router.route('/student_permanent_address/:student_id')
       mongo.connect(url, function(err, db){
         assert.equal(null, err);
         var cursor = db.collection('students').find({student_id},{'parents': 1, '_id': 0});
+        cursor.forEach(function(doc, err){
+          resultArray.push(doc);
+        }, function(){
+          db.close();
+          res.send(resultArray[0]);
+        });
+      });
+    });
+
+    router.route('/get_bus_route_by_student_id/:student_id/')
+    .get(function(req, res, next){
+      var student_id = req.params.student_id;
+      var resultArray = [];
+      mongo.connect(url, function(err, db){
+        assert.equal(null, err);
+        var cursor = db.collection('students').find({student_id},{'bus_route_id': 1, '_id': 0});
         cursor.forEach(function(doc, err){
           resultArray.push(doc);
         }, function(){

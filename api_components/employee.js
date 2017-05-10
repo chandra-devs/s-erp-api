@@ -30,6 +30,7 @@ router.route('/employee/:school_id')
             name: req.body.name,
             surname: req.body.surname,
             dob: req.body.dob,
+            qualification: req.body.qualification,
             job_category: req.body.job_category,
             experience: req.body.experience,
             phone: req.body.phone,

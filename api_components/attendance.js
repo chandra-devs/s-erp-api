@@ -39,7 +39,7 @@ router.route('/attendance/:student_id')
             attendance_id: 'getauto',
             student_id: student_id,
             class_id: req.body.class_id,
-            date: d.getDate() + '/' + month + '/' + d.getFullYear(),
+            date: d.getDate() + '-' + month + '-' + d.getFullYear(),
             session,
             status: req.body.status,
         };
@@ -70,7 +70,8 @@ router.route('/attendance/:student_id')
                                 }
                             }, function(err, result) {
                                 db.close();
-                                res.end('true');
+                                res.send({attendance_id: student_id+'-ATT-' + autoIndex});
+                                // res.end();
                             });
                         });
                     }
@@ -95,6 +96,20 @@ router.route('/attendance/:student_id')
             });
         });
     });
+
+    router.route('/edit_attendance/:attendance_id/:name/:value')
+        .post(function(req, res, next){
+          var attendance_id = req.params.attendance_id;
+          var name = req.params.name;
+          var value = req.params.value;
+          mongo.connect(url, function(err, db){
+                db.collection('attendance').update({attendance_id},{$set:{[name]: value}}, function(err, result){
+                  assert.equal(null, err);
+                   db.close();
+                   res.send('true');
+                });
+          });
+        });
 
 
 router.route('/get_attendance/:student_id/')
@@ -144,6 +159,31 @@ router.route('/get_attendance_by_date/:student_id/:date')
             });
         });
     });
+
+    router.route('/get_attendance_id_by_date_session/:student_id/:date/:session')
+        .get(function(req, res, next) {
+            var student_id = req.params.student_id;
+            var date = req.params.date;
+            var session = req.params.session;
+            var resultArray = [];
+            mongo.connect(url, function(err, db) {
+                assert.equal(null, err);
+                var cursor = db.collection('attendance').find({
+                    student_id,
+                    date,
+                    session
+                }, {
+                    'attendance_id': 1,
+                    '_id': 0
+                });
+                cursor.forEach(function(doc, err) {
+                    resultArray.push(doc);
+                }, function() {
+                    db.close();
+                    res.send(resultArray);
+                });
+            });
+        });
 
 
 module.exports = router;

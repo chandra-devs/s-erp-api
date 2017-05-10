@@ -34,6 +34,7 @@ router.route('/exams/:subject_id/:exam_sch_id')
             date: req.body.date,
             time_from: req.body.time_from,
             time_to: req.body.time_to,
+            max_marks: req.body.max_marks,
             status: status,
         };
         mongo.connect(url, function(err, db) {
@@ -141,6 +142,8 @@ router.route('/exams/:subject_id/:exam_sch_id')
                 exam_paper_id: exam_paper_id,
                 student_id: student_id,
                 marks: req.body.marks,
+                percentage: req.body.percentage,
+                conduct: req.body.conduct,
                 comment: req.body.comment,
                 date: date,
                 status: status,
@@ -199,7 +202,7 @@ router.route('/exams/:subject_id/:exam_sch_id')
                 }, function() {
                     db.close();
                     res.send({
-                        [exam_paper_id+'-'+subject_id]: resultArray
+                        [exam_paper_id+'-'+student_id]: resultArray
                     });
                 });
             });

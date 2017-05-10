@@ -29,6 +29,7 @@ router.route('/course_works/:subject_id')
             lesson_id: 'getauto',
             subject_id: subject_id,
             title: req.body.title,
+            no_of_topics: req.body.no_of_topics,
             status: status,
         };
         mongo.connect(url, function(err, db) {
@@ -39,7 +40,7 @@ router.route('/course_works/:subject_id')
                 }, {
                     unique: true
                 }, function(err, result) {
-                    if (item.subject_id == null || item.title == null) {
+                    if (item.subject_id == null || item.title == null || item.no_of_topics == null) {
                         res.end('null');
                     } else {
                         collection.insertOne(item, function(err, result) {

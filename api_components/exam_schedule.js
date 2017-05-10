@@ -18,34 +18,35 @@ router.use(function(req, res, next) {
     next(); // make sure we go to the next routes and don't stop here
 });
 
-// Add Schools
+// Add Exam Schedule
 
-router.route('/school_classes/:school_id')
+router.route('/exam_schedule/:school_id')
     .post(function(req, res, next) {
-        var status = 1;
         var school_id = req.params.school_id;
-        school_classes = [];
+        var status = 1;
+        subjects = [];
         var item = {
-            class_id: 'getauto',
+            exam_sch_id: 'getauto',
             school_id: school_id,
-            name: req.body.name,
+            exam_title: req.body.exam_title,
+            exam_classes: req.body.exam_classes,
+            from_date: req.body.from_date,
             status: status,
         };
         mongo.connect(url, function(err, db) {
-            autoIncrement.getNextSequence(db, 'school_classes', function(err, autoIndex) {
-                var collection = db.collection('school_classes');
+            autoIncrement.getNextSequence(db, 'exam_schedule', function(err, autoIndex) {
+                var collection = db.collection('exam_schedule');
                 collection.ensureIndex({
-                    "class_id": 1,
+                    "exam_sch_id": 1,
                 }, {
                     unique: true
                 }, function(err, result) {
-                    if (item.name == null) {
+                    if (item.school_id == null ||  item.exam_title == null) {
                         res.end('null');
                     } else {
                         collection.insertOne(item, function(err, result) {
                             if (err) {
                                 if (err.code == 11000) {
-                                    console.log(err);
                                     res.end('false');
                                 }
                                 res.end('false');
@@ -54,7 +55,7 @@ router.route('/school_classes/:school_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    class_id: school_id+'-CL-'+autoIndex
+                                    exam_sch_id: school_id+'-EXM_SCH-'+autoIndex
                                 }
                             }, function(err, result) {
                                 db.close();
@@ -65,76 +66,53 @@ router.route('/school_classes/:school_id')
                 });
             });
         });
+
     })
     .get(function(req, res, next) {
       var school_id = req.params.school_id;
         var resultArray = [];
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('school_classes').find({school_id});
+            var cursor = db.collection('exam_schedule').find({school_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
             }, function() {
                 db.close();
                 res.send({
-                    school_classes: resultArray
+                    exam_schedules: resultArray
                 });
             });
         });
     });
 
-    router.route('/get_class_ids/:school_id')
-    .get(function(req, res, next){
-      var school_id = req.params.school_id;
-      var resultArray = [];
-      mongo.connect(url, function(err, db){
-        assert.equal(null, err);
-        var cursor = db.collection('school_classes').aggregate([
-          {$match:{school_id}},
-          {$group: {
-            _id: '$school_id', classes: {$push: '$class_id'}
-            }
-          }
-        ]);
-        cursor.forEach(function(doc, err){
-          resultArray.push(doc);
-        }, function(){
-          db.close();
-          res.send(resultArray[0]);
+    router.route('/get_exam_schedule/:exam_sch_id')
+
+    .get(function(req, res, next) {
+      var exam_sch_id = req.params.exam_sch_id;
+        var resultArray = [];
+        mongo.connect(url, function(err, db) {
+            assert.equal(null, err);
+            var cursor = db.collection('exam_schedule').find({exam_sch_id});
+            cursor.forEach(function(doc, err) {
+                assert.equal(null, err);
+                resultArray.push(doc);
+            }, function() {
+                db.close();
+                res.send({
+                    exam_schedule: resultArray
+                });
+            });
         });
-      });
     });
 
-    router.route('/get_class_name/:class_id')
-    .get(function(req, res, next){
-      var class_id = req.params.class_id;
-      var resultArray = [];
-      mongo.connect(url, function(err, db){
-        assert.equal(null, err);
-        var cursor = db.collection('school_classes').aggregate([
-          {$match:{class_id}},
-          {$group: {
-            _id: '$class_id', classes: {$push: '$name'}
-            }
-          }
-        ]);
-        cursor.forEach(function(doc, err){
-          resultArray.push(doc);
-        }, function(){
-          db.close();
-          res.send(resultArray[0]);
-        });
-      });
-    });
-
-    router.route('/school_classes_edit/:class_id/:name/:value')
+    router.route('/edit_exam_schedule/:exam_sch_id')
         .post(function(req, res, next){
-          var class_id = req.params.class_id;
-          var name = req.params.name;
-          var value = req.params.value;
+          var exam_sch_id = req.params.exam_sch_id;
+          var name = req.body.name;
+          var value = req.body.value;
           mongo.connect(url, function(err, db){
-                db.collection('school_classes').update({class_id},{$set:{[name]: value}}, function(err, result){
+                db.collection('exam_schedule').update({exam_sch_id},{$set:{[name]: value}}, function(err, result){
                   assert.equal(null, err);
                    db.close();
                    res.send('true');

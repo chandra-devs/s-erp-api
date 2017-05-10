@@ -11,6 +11,12 @@ var employee = require("./api_components/employee.js");
 var staff_user = require("./api_components/staff_user.js");
 var teachers = require("./api_components/teacher.js");
 var assesment = require("./api_components/assesment.js");
+const Authentication = require('./controllers/authentication');
+const passportService = require('./services/passport');
+const passport = require('passport');
+
+const requireAuth = passport.authenticate('jwt',{ session: false });
+const requireSignin = passport.authenticate('local',{session: false});
 
 var config = require("./config.json");
 var express = require("express");
@@ -19,12 +25,15 @@ var app = express();
 var server = require('http').createServer(app);
 var api_key = "api-key-KJFSI4924R23RFSDFSD7F94";
 var mongo = require('mongodb').MongoClient;
+const mongoose = require('mongoose');
 var objectId = require('mongodb').ObjectID;
 var assert = require('assert');
 var port = process.env.PORT || 4005;
 var router = express.Router();
 var fs = require("fs");
-var url = 'mongodb://' + config.dbhost + ':27017/s_erp_data';
+var url = 'mongodb://' +config.dbhost + ':27017/s_erp_data';
+// DB Setup for Auth
+mongoose.connect('mongodb://localhost:auth/auth');
 var cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
@@ -37,13 +46,29 @@ app.use(bodyParser.json());
 router.use(function(req, res, next) {
     // do logging
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
+    next(); // make sure we go to the next routes and don't stop here
+});
+
+app.use(function(req, res, next) {
+    // do logging
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
     next(); // make sure we go to the next routes and don't stop here
 });
 
 app.get('/', function (req, res) {
-  res.send('Hello Node!');
+  res.send('School ERP API');
 });
+
+
+app.get('/secure', requireAuth, function (req, res) {
+  res.send('School ERP API -  Authorised Page');
+});
+
+app.post('/signin', requireSignin, Authentication.signin);
+
+app.post('/signup', Authentication.signup);
 
 router.route('/em')
     .get(function(req, res, next) {
@@ -52,7 +77,8 @@ router.route('/em')
                 res.send("Hay! We have a connection WOW Great");
                 return true;
             } else {
-                res.send("This think you have done something wrong!!");
+                console.log(err);
+                res.send("I think you have done something wrong!!");
             }
         });
 
