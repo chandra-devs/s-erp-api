@@ -39,6 +39,7 @@ router.route('/attendance/:student_id')
             attendance_id: 'getauto',
             student_id: student_id,
             class_id: req.body.class_id,
+            section_id: req.body.section_id,
             date: d.getDate() + '-' + month + '-' + d.getFullYear(),
             session,
             status: req.body.status,
@@ -51,7 +52,7 @@ router.route('/attendance/:student_id')
                 }, {
                     unique: true
                 }, function(err, result) {
-                    if (item.class_id == null || item.date == null || item.session == null || item.status == null) {
+                    if (item.class_id == null || item.section_id == null || item.date == null || item.session == null || item.status == null) {
                         res.end('null');
                     } else {
                         collection.insertOne(item, function(err, result) {

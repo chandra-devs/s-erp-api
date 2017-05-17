@@ -20,17 +20,18 @@ router.use(function(req, res, next) {
 
 // Add Stundents
 
-router.route('/students/:class_id')
+router.route('/students/:section_id')
     .post(function(req, res, next) {
-        var class_id = req.params.class_id;
-        var splited = class_id.split("-");
+        var section_id = req.params.section_id;
+        var splited = section_id.split("-");
         var school_id = splited[0]+'-'+splited[1];
+        var class_id = splited[0]+'-'+splited[1]+'-'+splited[2]+'-'+splited[3];
         var status = 1;
         var item = {
             student_id: 'getauto',
             school_id: school_id,
             class_id: class_id,
-            section: req.body.section,
+            section: section_id,
             surname: req.body.surname,
             first_name: req.body.first_name,
             last_name: req.body.last_name,
@@ -41,6 +42,8 @@ router.route('/students/:class_id')
             email: req.body.email,
             category: req.body.category,
             admission_date: req.body.admission_date,
+            admission_no: req.body.admission_no,
+            roll_no: req.body.roll_no,
             academic_year: req.body.academic_year,
             bus_route_id: req.body.bus_route_id,
             status: status,
@@ -60,6 +63,27 @@ router.route('/students/:class_id')
             perm_pincode: req.body.perm_pincode,
             perm_long: req.body.perm_long,
             perm_lat: req.body.perm_lat
+        };
+        var parent_father = {
+          parent_name: req.body.father_name,
+          parent_contact: req.body.father_contact,
+          parent_relation: 'father',
+          parent_address: req.body.cur_address+' '+req.body.perm_city+' '+req.body.perm_state+' '+req.body.perm_pincode,
+          occupation: req.body.father_occupation
+        };
+        var parent_mother = {
+          parent_name: req.body.mother_name,
+          parent_contact: req.body.mother_contact,
+          parent_relation: 'mother',
+          parent_address: req.body.cur_address+' '+req.body.perm_city+' '+req.body.perm_state+' '+req.body.perm_pincode,
+          occupation: req.body.mother_occupation
+        };
+        var parent_gaurdian = {
+          parent_name: req.body.gaurdian_name,
+          parent_contact: req.body.gaurdian_contact,
+          parent_relation: req.body.gaurdian_relation,
+          parent_address: req.body.gaurdian_address,
+          occupation: req.body.gaurdian_occupation
         };
         mongo.connect(url, function(err, db) {
             autoIncrement.getNextSequence(db, 'students', function(err, autoIndex) {
@@ -86,11 +110,25 @@ router.route('/students/:class_id')
                                   student_id: class_id+'-STD-'+autoIndex
                                 },
                                 $push: {
-                                  current_address, permanent_address
+                                  current_address, permanent_address, parents:parent_father
                                 }
                             }, function(err, result) {
                                 db.close();
                                 res.end('true');
+                            });
+                            collection.update({
+                              _id: item._id
+                            },{
+                              $push:{
+                                parents:parent_mother
+                              }
+                            });
+                            collection.update({
+                              _id: item._id
+                            },{
+                              $push:{
+                                parents:parent_gaurdian
+                              }
                             });
                         });
                     }
@@ -246,6 +284,8 @@ router.route('/student_permanent_address/:student_id')
             });
           });
         });
+
+
 
     router.route('/get_parents/:student_id/')
     .get(function(req, res, next){

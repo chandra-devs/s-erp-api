@@ -27,9 +27,11 @@ router.route('/employee/:school_id')
         var item = {
             employee_id: 'getauto',
             school_id: school_id,
-            name: req.body.name,
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
             surname: req.body.surname,
             dob: req.body.dob,
+            gender: req.body.gender,
             qualification: req.body.qualification,
             job_category: req.body.job_category,
             experience: req.body.experience,
@@ -90,6 +92,9 @@ router.route('/employee/:school_id')
                         });
                     }
                 });
+                collection.ensureIndex({
+                    "first_name":"text","last_name":"text","email":"text"
+                });
             });
         });
 
@@ -110,7 +115,23 @@ router.route('/employee/:school_id')
             });
         });
     });
-
+router.route('/search_employee/:employee_type/:gender/:search_key')
+    .get(function(req, res, next){
+      var employee_type = req.params.employee_type;
+      var gender = req.params.gender;
+      var search_key = req.params.search_key;
+      var resultArray = [];
+      mongo.connect(url, function(err, db){
+        assert.equal(null, err);
+        var cursor = db.collection('employee').find({employee_type: job_category,gender, $text:{$search:search_key}});
+        cursor.forEach(function(doc, err){
+          resultArray.push(doc);
+        }, function(){
+          db.close();
+          res.send(resultArray);
+        });
+      });
+});
 router.route('/add_old_employment_details/:employee_id')
     .post(function(req, res, next){
       old_employment_details = [];

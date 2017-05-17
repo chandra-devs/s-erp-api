@@ -92,7 +92,6 @@ router.route('/teachers/:school_id')
         });
     });
 
-
 router.route('/add_subjects_to_teacher/:teacher_id')
     .post(function(req, res, next){
       subjects = [];
