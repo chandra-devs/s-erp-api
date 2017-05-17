@@ -20,14 +20,14 @@ router.use(function(req, res, next) {
 
 // Add Schools
 
-router.route('/subjects/:class_id')
+router.route('/subjects/:section_id')
     .post(function(req, res, next) {
         var status = 1;
-        var class_id = req.params.class_id;
+        var section_id = req.params.section_id;
         subjects = [];
         var item = {
             subject_id: 'getauto',
-            class_id: class_id,
+            section_id: section_id,
             name: req.body.name,
         };
         mongo.connect(url, function(err, db) {
@@ -53,7 +53,7 @@ router.route('/subjects/:class_id')
                                 _id: item._id
                             }, {
                                 $set: {
-                                    subject_id: class_id+'-SUB-'+autoIndex
+                                    subject_id: section_id+'-SUB-'+autoIndex
                                 }
                             }, function(err, result) {
                                 db.close();
@@ -67,10 +67,10 @@ router.route('/subjects/:class_id')
     })
     .get(function(req, res, next) {
         var resultArray = [];
-        var class_id = req.params.class_id;
+        var section_id = req.params.section_id;
         mongo.connect(url, function(err, db) {
             assert.equal(null, err);
-            var cursor = db.collection('subjects').find({class_id});
+            var cursor = db.collection('subjects').find({section_id});
             cursor.forEach(function(doc, err) {
                 assert.equal(null, err);
                 resultArray.push(doc);
@@ -83,16 +83,16 @@ router.route('/subjects/:class_id')
         });
     });
 
-    router.route('/get_subject_ids/:class_id')
+    router.route('/get_subject_ids/:section_id')
     .get(function(req, res, next){
-      var class_id = req.params.class_id;
+      var section_id = req.params.section_id;
       var resultArray = [];
       mongo.connect(url, function(err, db){
         assert.equal(null, err);
         var cursor = db.collection('subjects').aggregate([
-          {$match:{class_id}},
+          {$match:{section_id}},
           {$group: {
-            _id: '$class_id', subject_ids: {$push: '$subject_id'}
+            _id: '$section_id', subject_ids: {$push: '$subject_id'}
             }
           }
         ]);
