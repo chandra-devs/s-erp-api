@@ -29,7 +29,9 @@ router.route('/course_works/:subject_id')
             lesson_id: 'getauto',
             subject_id: subject_id,
             title: req.body.title,
+            code: req.body.code,
             no_of_topics: req.body.no_of_topics,
+            description: req.body.description,
             status: status,
         };
         mongo.connect(url, function(err, db) {
