@@ -2,6 +2,11 @@
 var schools = require("./api_components/schools.js");
 var exam_schedule = require("./api_components/exam_schedule.js");
 var exams = require("./api_components/exams.js");
+var library = require("./api_components/library.js");
+var timetable = require("./api_components/timetable.js");
+var transport = require("./api_components/transport.js");
+var busroute = require("./api_components/busroute.js");
+var station_and_routes = require("./api_components/station_and_routes.js");
 var school_classes = require("./api_components/school_classes.js");
 var class_sections = require("./api_components/class_sections.js");
 var students = require("./api_components/students.js");
@@ -13,6 +18,7 @@ var employee = require("./api_components/employee.js");
 var staff_user = require("./api_components/staff_user.js");
 var teachers = require("./api_components/teacher.js");
 var assesment = require("./api_components/assesment.js");
+var assignment = require("./api_components/assignment.js");
 const Authentication = require('./controllers/authentication');
 const passportService = require('./services/passport');
 const passport = require('passport');
@@ -93,6 +99,11 @@ app.listen(port, function(){
 
 app.use('/api', schools);
 app.use('/api', exams);
+app.use('/api', library);
+app.use('/api', timetable);
+app.use('/api', transport);
+app.use('/api', busroute);
+app.use('/api', station_and_routes);
 app.use('/api', exam_schedule);
 app.use('/api', school_classes);
 app.use('/api', class_sections);
@@ -105,4 +116,5 @@ app.use('/api', Emp_attendance);
 app.use('/api', employee);
 app.use('/api', staff_user);
 app.use('/api', assesment);
+app.use('/api', assignment);
 app.use('/api', router);

@@ -138,7 +138,6 @@ router.route('/students/:section_id')
                 });
             });
         });
-
     })
     .get(function(req, res, next) {
         var class_id = req.params.class_id;
@@ -159,23 +158,23 @@ router.route('/students/:section_id')
     });
 
 router.route('/search_student/:academic_year/:class_id/:section/:search_key')
-.get(function(req, res, next){
-  var academic_year = req.params.academic_year;
-  var class_id = req.params.class_id;
-  var section = req.params.section.toUpperCase();
-  var search_key = req.params.search_key;
-  var resultArray = [];
-  mongo.connect(url, function(err, db){
-    assert.equal(null, err);
-    var cursor = db.collection('students').find({academic_year,class_id,section, $text:{$search:search_key}});
-    cursor.forEach(function(doc, err){
-      resultArray.push(doc);
-    }, function(){
-      db.close();
-      res.send(resultArray);
+    .get(function(req, res, next){
+      var academic_year = req.params.academic_year;
+      var class_id = req.params.class_id;
+      var section = req.params.section.toUpperCase();
+      var search_key = req.params.search_key;
+      var resultArray = [];
+      mongo.connect(url, function(err, db){
+        assert.equal(null, err);
+        var cursor = db.collection('students').find({academic_year,class_id,section, $text:{$search:search_key}});
+        cursor.forEach(function(doc, err){
+          resultArray.push(doc);
+        }, function(){
+          db.close();
+          res.send(resultArray);
+        });
+      });
     });
-  });
-});
 
 router.route('/add_parent/:student_id')
     .post(function(req, res, next){
