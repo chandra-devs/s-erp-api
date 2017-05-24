@@ -20,11 +20,13 @@ router.use(function(req, res, next) {
 
 // Add Timetable
 
-router.route('/transport_stations/')
+router.route('/transport_stations/:school_id')
     .post(function(req, res, next) {
         var status = 1;
+        var school_id = req.params.school_id;
         var item = {
             station_id: 'getauto',
+            school_id: school_id,
 						station_name: req.body.station_name,
 						station_code: req.body.station_code,
 						station_geo_location: req.body.station_geo_location,

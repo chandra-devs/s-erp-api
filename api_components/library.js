@@ -20,12 +20,14 @@ router.use(function(req, res, next) {
 
 // Add Schools
 
-router.route('/book')
+router.route('/book/:school_id')
     .post(function(req, res, next) {
         var status = 1;
+        var school_id = req.params.school_id;
         books = [];
         var item = {
             book_id: 'getauto',
+            school_id: school_id,
             book_title: req.body.book_title,
             author_name: req.body.author_name,
             book_price: req.body.book_price,

@@ -100,5 +100,22 @@ router.route('/assignment/:section_id/:lesson_id')
           });
         });
 
+    router.route('/assignment_edit/:assignment_id')
+      .get(function(req, res, next) {
+          var resultArray = [];
+          mongo.connect(url, function(err, db) {
+              assert.equal(null, err);
+              var cursor = db.collection('assignments').remove({assignment_id});
+              cursor.forEach(function(doc, err) {
+                  assert.equal(null, err);
+                  resultArray.push(doc);
+              }, function() {
+                  db.close();
+                  res.send({
+                      removed: resultArray
+                  });
+              });
+          });
+      });
 
 module.exports = router;
