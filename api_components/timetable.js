@@ -31,6 +31,7 @@ router.route('/class_timetable/:section_id')
 						start_time: req.body.start_time,
 						end_time: req.body.end_time,
 						room_no: req.body.room_no,
+            subject_id: req.body.subject_id,
             status: status,
         }
         mongo.connect(url, function(err, db) {

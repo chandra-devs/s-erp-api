@@ -5,7 +5,7 @@ var emailregex = require('regex-email');
 
 function tokenForUser(user) {
 	const timestamp = new Date().getTime();
-	return jwt.encode({ sub: user._id, unid: user.uniqueId, iat: timestamp }, "ex23hf9284y9er2ehfbdbvcv83yehrdf8273");
+	return jwt.encode({ sub: user._id, unid: user.uniqueId, user.role, user.school_id, iat: timestamp }, "ex23hf9284y9er2ehfbdbvcv83yehrdf8273");
 }
 exports.signin = function(req, res, next){
 	// User has already had their email and password auth'd
@@ -16,6 +16,8 @@ exports.signup = function(req, res, next){
 	const email = req.body.email;
 	const password = req.body.password;
 	const uniqueId = req.body.uniqueId;
+	const role = req.body.role;
+	const school_id = req.body.school_id;
 
 	if (!email || !password){
 		return res.status(422).send({ error: 'You must provide email and password' });
@@ -38,7 +40,9 @@ exports.signup = function(req, res, next){
 		const user = new User({
 			email: email,
 			password: password,
-			uniqueId: uniqueId
+			uniqueId: uniqueId,
+			role: role,
+			school_id: school_id
 		});
 
 		user.save(function(err) {
